@@ -1,11 +1,11 @@
-const { Pool, Query } = require("pg");
+const { Pool } = require("pg");
 
 const pool = new Pool({
-    connectionString: process.env.SUPABASE_URL,
+    connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
 })
 
 module.exports = {
-    query: (text, params) => Query(text, params),
+    query: (text, params) => pool.query(text, params),
     pool
 }

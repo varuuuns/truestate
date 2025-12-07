@@ -1,5 +1,5 @@
-const buildQuery = require("../utils/queryBuilder");
-const db = require("../utils/db");
+const buildQuery = require("../utils/queryBuilder.js");
+const db = require("../utils/db.js");
 
 const getTransactions = async (queryParams) => {
     try {
@@ -7,7 +7,7 @@ const getTransactions = async (queryParams) => {
 
         const [dataResult, countResult] = await Promise.all([
             db.query(dataQuery, sqlParams),
-            db.query(countQuery, sqlParams.slie(0, sqlParams.length - 2))
+            db.query(countQuery, sqlParams.slice(0, sqlParams.length - 2))
         ]);
 
         const totalCount = parseInt(countResult.rows[0].count);

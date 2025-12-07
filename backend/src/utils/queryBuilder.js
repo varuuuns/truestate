@@ -1,8 +1,8 @@
 const SORT_COLUMNS = {
-    date: 'date',
-    quantity: 'quantity',
-    customerName: 'customerName',
-    finalAmout: 'finalAmount'
+    date: 't.date',
+    quantity: 't.quantity',
+    customerName: 'c.customerName',
+    finalAmout: 't.finalAmount'
 }
 
 const buildQuery = (params) => {
@@ -14,8 +14,8 @@ const buildQuery = (params) => {
     // SERACH for customer_name , phone_number
     if (params.search?.trim()) {
         joins.add(`customers c ON t.customer_id=c.customer_id`);
-        whereClauses.push(`c.customer_name LIKE $${paramIndex} OR c.phone_number LIKE $${paramIndex}`);
-        queryParams.push(`%${params.search.trim()}%`);
+        whereClauses.push(`c.search_vector @@ to_tsquery('english', $${paramIndex})`);
+        queryParams.push(params.search.trim().split(/\s+/).join(' & ') + ':*');
         paramIndex++;
     }
 
@@ -24,7 +24,7 @@ const buildQuery = (params) => {
         const values = params[param];
         if (values) {
             if (join) joins.add(join);
-            const arr = Array.isArray(values) ? values : values[values];
+            const arr = Array.isArray(values) ? values : String(values).split(',');
             whereClauses.push(`${column}=ANY($${paramIndex})`);
             queryParams.push(arr);
             paramIndex++;
@@ -41,7 +41,8 @@ const buildQuery = (params) => {
     if (params.tags?.length) {
         joins.add('products p ON t.product_id=product_id');
         whereClauses.push(`p.tags @>$${paramIndex}::text[]`);
-        queryParams.push(params.tags);
+        const tagsArray = Array.isArray(params.tags) ? params.tags : String(params.tags).split(',');
+        queryParams.push(tagsArray);
         paramIndex++;
     }
 
@@ -54,7 +55,7 @@ const buildQuery = (params) => {
             paramIndex++;
         }
         if (params.maxAge) {
-            whereClauses.push(`c.age<=$${paramsIndex}`);
+            whereClauses.push(`c.age<=$${paramIndex}`);
             queryParams.push(Number(params.maxAge));
             paramIndex++;
         }
@@ -68,7 +69,7 @@ const buildQuery = (params) => {
     }
     if (params.endDate) {
         whereClauses.push(`t.date<=$${paramIndex}`);
-        queryParams.push(params.startDate);
+        queryParams.push(params.endDate);
         paramIndex++;
     }
 
@@ -78,16 +79,25 @@ const buildQuery = (params) => {
     const orderByClause = `ORDER BY ${sortBy} ${sortDir}`;
 
     // PAGINATION
-    const pageSize = Math.min(Number(params.limit) || 50, 100); // default 50, max 100
-    let paginationClause = `LIMIT $${paramIndex}`;
-    let cursorClause = '';
-    queryParams.push(pageSize);
+    const pageSize = 50;
+    const page = parseInt(params.page) || 1;
+    const offset = (page - 1) * pageSize;
+    const paginationClause = `LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    queryParams.push(pageSize, offset);
 
-    if (params.cursor && params.sortBy === 'date') {
-        const comparator = (params.sortDir?.toUpperCase() === 'ASC') ? '>' : '<';
-        cursorClause = `t.date ${comparator} $${++paramIndex}`;
-        queryParams.push(params.cursor);
-        whereClauses.push(cursorClause);
-    }
+    const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+    const joinString = Array.from(joins).join('');
 
+    const selectClause = `SELECT t.*, c.customer_name,c.phone_number,p.product_name,p.product_category,p.tags`;
+
+    const dataQuery = `${selectClause} FROM transactions t ${joinString} ${whereClause} ${orderByClause} ${paginationClause}`;
+
+    const countQuery = `SELECT COUNT(t.transaction_id) FROM transactions t ${joinString} ${whereClause}`;
+
+    return { dataQuery, countQuery, queryParams };
+
+}
+
+module.exports = {
+    buildQuery
 }

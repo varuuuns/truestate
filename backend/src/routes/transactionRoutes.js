@@ -1,9 +1,7 @@
 const express = require("express");
-const { fetchTransations } = require("../controllers/transactionController");
+const { fetchTransactions } = require("../controllers/transactionController.js");
 const router = express.Router();
 
-router.get('/', fetchTransations);
+router.get('/', fetchTransactions);
 
-modules.exports = {
-    router
-}
+module.exports = router;
