@@ -25,3 +25,7 @@ const getTransactions = async (queryParams) => {
         throw new Error(`db query failed`);
     }
 }
+
+module.exports = {
+    getTransactions
+}
