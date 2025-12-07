@@ -6,6 +6,6 @@ const pool = new Pool({
 })
 
 module.exports = {
-    qeuery: (text, params) => Query(text, params),
+    query: (text, params) => Query(text, params),
     pool
 }
