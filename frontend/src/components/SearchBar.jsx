@@ -1,22 +1,20 @@
 import React from 'react';
+import { Search } from 'lucide-react';
 
-const SearchBar = ({ onSearchChange, initialSearch }) => {
+export const SearchBar = ({ value, onChange }) => {
     return (
-        <div className="relative w-full max-w-sm">
-
+        <div className="relative w-full md:w-96 group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-slate-400 group-focus-within:text-sky-400 transition-colors" />
+            </div>
             <input
                 type="text"
-                defaultValue={initialSearch}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search Name, Phone no. (Case-insensitive)"
-                className="w-full p-2.5 pl-10 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full pl-10 pr-3 py-2 border border-slate-700 rounded-lg leading-5 bg-slate-800 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 sm:text-sm transition-all shadow-lg"
+                placeholder="Search customers, products..."
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
             />
-
-            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
+            <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500" />
         </div>
     );
 };
-
-export default SearchBar;

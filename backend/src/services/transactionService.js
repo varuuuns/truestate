@@ -1,4 +1,4 @@
-const buildQuery = require("../utils/queryBuilder.js");
+const { buildQuery } = require("../utils/queryBuilder.js");
 const db = require("../utils/db.js");
 
 const getTransactions = async (queryParams) => {
@@ -17,7 +17,7 @@ const getTransactions = async (queryParams) => {
             totalCount: totalCount,
             pageSize: 50,
             currentPage: parseInt(queryParams.page) || 1,
-            totalPages: Math.ceil(totalCount/50),
+            totalPages: Math.ceil(totalCount / 50),
         }
     }
     catch (err) {

@@ -2,7 +2,7 @@ const SORT_COLUMNS = {
     date: 't.date',
     quantity: 't.quantity',
     customerName: 'c.customerName',
-    finalAmout: 't.finalAmount'
+    finalAmount: 't.finalAmount'
 }
 
 const buildQuery = (params) => {
@@ -11,15 +11,15 @@ const buildQuery = (params) => {
     let joins = new Set();
     let paramIndex = 1;
 
-    // SERACH for customer_name , phone_number
+    // SEARCH for customer_name , phone_number
     if (params.search?.trim()) {
-        joins.add(`customers c ON t.customer_id=c.customer_id`);
+        joins.add(`LEFT JOIN customers c ON t.customer_id = c.customer_id`);
         whereClauses.push(`c.search_vector @@ to_tsquery('english', $${paramIndex})`);
         queryParams.push(params.search.trim().split(/\s+/).join(' & ') + ':*');
         paramIndex++;
     }
 
-    // FILETER for customer_region, gender, age range, product_category, tags, payment_method, date range
+    // FILTER for customer_region, gender, age range, product_category, tags, payment_method, date range
     const addMultiSelect = (param, column, join = null) => {
         const values = params[param];
         if (values) {
@@ -31,15 +31,15 @@ const buildQuery = (params) => {
         }
     }
 
-    // customer_regin, gender, product_category, payment_method
-    addMultiSelect('region', 'c.customer_region', 'customers c ON t.customer_id = c.customer_id');
-    addMultiSelect('gender', 'c.gender', 'customers c ON t.customer_id = c.customer_id');
-    addMultiSelect('category', 'p.product_category', 'products p ON t.product_id = p.product_id');
+    // customer_region, gender, product_category, payment_method
+    addMultiSelect('region', 'c.customer_region', 'LEFT JOIN customers c ON t.customer_id = c.customer_id');
+    addMultiSelect('gender', 'c.gender', 'LEFT JOIN customers c ON t.customer_id = c.customer_id');
+    addMultiSelect('category', 'p.product_category', 'LEFT JOIN products p ON t.product_id = p.product_id');
     addMultiSelect('paymentMethod', 't.payment_method');
 
     // tags
     if (params.tags?.length) {
-        joins.add('products p ON t.product_id=product_id');
+        joins.add('LEFT JOIN products p ON t.product_id = p.product_id');
         whereClauses.push(`p.tags @>$${paramIndex}::text[]`);
         const tagsArray = Array.isArray(params.tags) ? params.tags : String(params.tags).split(',');
         queryParams.push(tagsArray);
@@ -48,7 +48,7 @@ const buildQuery = (params) => {
 
     // age range
     if (params.minAge || params.maxAge) {
-        joins.add('customers c ON t.customer_id=c.customer_id');
+        joins.add('LEFT JOIN customers c ON t.customer_id = c.customer_id');
         if (params.minAge) {
             whereClauses.push(`c.age>=$${paramIndex}`);
             queryParams.push(Number(params.minAge));
@@ -86,7 +86,7 @@ const buildQuery = (params) => {
     queryParams.push(pageSize, offset);
 
     const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
-    const joinString = Array.from(joins).join('');
+    const joinString = Array.from(joins).join(' ');
 
     const selectClause = `SELECT t.*, c.customer_name,c.phone_number,p.product_name,p.product_category,p.tags`;
 
