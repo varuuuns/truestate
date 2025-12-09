@@ -62,21 +62,86 @@ const FilterButton = ({ id, label, activeValues = [], onToggle, isOpen, setIsOpe
     );
 };
 
-export const FilterBar = () => {
+export const FilterBar = ({ filters, onFilterChange }) => {
+    const [openDropdown, setOpenDropdown] = useState(null);
+
+    const handleToggle = (key, value) => {
+        const currentValues = filters && filters[key] ? filters[key] : [];
+        const newValues = currentValues.includes(value)
+            ? currentValues.filter(v => v !== value)
+            : [...currentValues, value];
+        onFilterChange && onFilterChange(key, newValues);
+    };
+
+    const handleReset = () => {
+        // Reset all array-based filters
+        ['region', 'gender', 'age', 'category', 'tags', 'payment'].forEach(key => {
+            onFilterChange && onFilterChange(key, []);
+        });
+    };
+
+    // Safety check for filters prop
+    if (!filters) return null;
+
     return (
         <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3 flex-wrap">
-                <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+                <button
+                    onClick={handleReset}
+                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                    title="Reset Filters"
+                >
                     <RefreshCw size={18} />
                 </button>
 
-                <FilterButton label="Customer Region" />
-                <FilterButton label="Gender" />
-                <FilterButton label="Age Range" />
-                <FilterButton label="Product Category" />
-                <FilterButton label="Tags" />
-                <FilterButton label="Payment Method" />
-                <FilterButton label="Date" />
+                <FilterButton
+                    id="region"
+                    label="Customer Region"
+                    activeValues={filters.region}
+                    onToggle={(val) => handleToggle('region', val)}
+                    isOpen={openDropdown === 'region'}
+                    setIsOpen={setOpenDropdown}
+                />
+                <FilterButton
+                    id="gender"
+                    label="Gender"
+                    activeValues={filters.gender}
+                    onToggle={(val) => handleToggle('gender', val)}
+                    isOpen={openDropdown === 'gender'}
+                    setIsOpen={setOpenDropdown}
+                />
+                <FilterButton
+                    id="age"
+                    label="Age Range"
+                    activeValues={filters.age}
+                    onToggle={(val) => handleToggle('age', val)}
+                    isOpen={openDropdown === 'age'}
+                    setIsOpen={setOpenDropdown}
+                />
+                <FilterButton
+                    id="category"
+                    label="Product Category"
+                    activeValues={filters.category}
+                    onToggle={(val) => handleToggle('category', val)}
+                    isOpen={openDropdown === 'category'}
+                    setIsOpen={setOpenDropdown}
+                />
+                <FilterButton
+                    id="tags"
+                    label="Tags"
+                    activeValues={filters.tags}
+                    onToggle={(val) => handleToggle('tags', val)}
+                    isOpen={openDropdown === 'tags'}
+                    setIsOpen={setOpenDropdown}
+                />
+                <FilterButton
+                    id="payment"
+                    label="Payment Method"
+                    activeValues={filters.payment}
+                    onToggle={(val) => handleToggle('payment', val)}
+                    isOpen={openDropdown === 'payment'}
+                    setIsOpen={setOpenDropdown}
+                />
             </div>
 
             <div className="flex items-center gap-2">

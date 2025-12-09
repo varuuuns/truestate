@@ -71,7 +71,10 @@ function App() {
 
         <div className="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8">
           <div className="max-w-7xl mx-auto">
-            <FilterBar /> {/* Currently static visual, can be wired up later */}
+            <FilterBar
+              filters={filters}
+              onFilterChange={handleFilterChange}
+            />
 
             <StatsCards />
 
