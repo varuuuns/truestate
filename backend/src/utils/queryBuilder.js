@@ -14,7 +14,7 @@ const buildQuery = (params) => {
     // SEARCH for customer_name , phone_number
     if (params.search?.trim()) {
         joins.add(`LEFT JOIN customers c ON t.customer_id = c.customer_id`);
-        whereClauses.push(`c.search_vector @@ to_tsquery('english', $${paramIndex})`);
+        whereClauses.push(`c.search_vector @@ plainto_tsquery('english', $${paramIndex})`);
         queryParams.push(params.search.trim().split(/\s+/).join(' & ') + ':*');
         paramIndex++;
     }

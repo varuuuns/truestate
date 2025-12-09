@@ -5,11 +5,6 @@ import {
     FileInput,
     ChevronDown,
     ChevronRight,
-    FileText,
-    ShieldCheck,
-    Ban,
-    CheckCircle,
-    Clock,
     Box
 } from 'lucide-react';
 
@@ -72,9 +67,8 @@ export const Sidebar = () => {
                 </div>
             </div>
 
-            {/* User Profile (from screenshot, it's under logo usually or maybe separate) */}
             <div className="px-6 pb-6 pt-0">
-                <p className="text-xs text-gray-400">Anurag Yadav</p>
+                <p className="text-xs text-gray-400">VARUN SARALA</p>
             </div>
 
             <div className="flex-1 overflow-y-auto py-2">

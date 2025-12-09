@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { debounce } from "lodash";
-
+import { TransactionTable } from "../components/TransactionTable";
+import { SearchBar } from "../components/SearchBar";
+import { FilterPanel } from "../components/FilterPanel";
+import { PaginationControls } from "../components/PaginationControls";
+import ErrorModal from "../components/ErrorModal";
 
 const BACKEND_URL = 'http://localhost:333/api/v1/transactions';
 const PAGE_SIZE = 10;
 
 const SalesDashboard = () => {
-    const [transaction, setTransaction] = useState([]);
+    const [transactions, setTransactions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [meta, setMeta] = useState({});
+    const [showSortError, setShowSortError] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState([]);
     const [filters, setFilters] = useState(false);
@@ -34,15 +39,27 @@ const SalesDashboard = () => {
                 return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
             })
             .join('&');
-        
+
         try {
             const response = await axios.get(`${BACKEND_URL}?${queryParams}`);
-            setTransaction(response.data.data);
+            setTransactions(response.data.data);
             setMeta(response.data.meta);
         }
         catch (err) {
-            console.log(`api error:${err}`);
-            setTransaction([]);
+            console.error('API Error Details:', {
+                status: err.response?.status,
+                data: err.response?.data,
+                sortBy: sort.sortBy
+            });
+
+            const isTimeout = err.response?.status === 504 || err.code === 'ECONNABORTED';
+            const isLikelySortFailure = err.response?.status === 500 && sort.sortBy === 'customer_name';
+
+            if (isTimeout || isLikelySortFailure) {
+                setShowSortError(true);
+            }
+
+            setTransactions([]);
             setMeta({ totalCount: 0, totalPages: 1, pageSize: PAGE_SIZE });
         }
         finally {
@@ -52,7 +69,7 @@ const SalesDashboard = () => {
 
     const debouncedFetch = useMemo(() => debounce(fetchData, 400)
         , [fetchData]);
-    
+
     useEffect(() => {
         if (searchQuery) debouncedFetch;
         else fetchData();
@@ -88,9 +105,23 @@ const SalesDashboard = () => {
                 />
             </div>
 
-            <TransactionTable data={transactions} isLoading={isLoading} />
+            <TransactionTable
+                data={transactions}
+                loading={isLoading}
+                sort={sort.sortBy}
+                order={sort.sortDir?.toLowerCase()}
+                onSort={(key) => handleSortChange({ sortBy: key, sortDir: sort.sortDir })}
+                onToggleOrder={() => handleSortChange({ sortBy: sort.sortBy, sortDir: sort.sortDir === 'ASC' ? 'DESC' : 'ASC' })}
+            />
 
             <PaginationControls meta={meta} setPage={setPage} currentPage={page} />
+
+            <ErrorModal
+                isOpen={showSortError}
+                onClose={() => setShowSortError(false)}
+                title="Sorting Unavailable"
+                message="The database has too many values, so its taking up lot of time to search. Sorting by Customer Name on the full dataset is unavailable due to performance limits. Please apply filters (e.g., Select a specific Region or Date Range) to reduce the results, then try sorting again."
+            />
         </div>
     );
 }

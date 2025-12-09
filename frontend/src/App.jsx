@@ -10,7 +10,7 @@ import { useDebounce } from './hooks/useDebounce';
 
 function App() {
   const [data, setData] = useState([]);
-  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 100, totalPages: 1 });
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 200, totalPages: 1 });
   const [loading, setLoading] = useState(false);
 
   // State for filters/sort
@@ -39,9 +39,9 @@ function App() {
   const loadTransactions = async () => {
     setLoading(true);
     try {
-      const params = {
+      const rawParams = {
         page,
-        limit: 100,
+        limit: 200,
         search: debouncedSearch,
         sortBy: filters.sort,
         sortOrder: filters.order,
@@ -55,12 +55,15 @@ function App() {
         endDate: filters.endDate,
       };
 
+      const params = Object.fromEntries(
+        Object.entries(rawParams).filter(([_, v]) => v != null && v !== '')
+      );
+
       const response = await fetchTransactions(params);
       setData(response.data);
       setMeta(response.meta);
     } catch (err) {
       console.error('Failed to load data', err);
-      // Fallback or empty state handled by table
     } finally {
       setLoading(false);
     }
@@ -74,10 +77,8 @@ function App() {
 
   return (
     <div className="flex bg-white min-h-screen font-sans text-gray-900">
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <TopBar onSearch={setSearch} searchValue={search} />
 

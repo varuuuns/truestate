@@ -4,7 +4,7 @@ const getTransactions = async (req, res) => {
     try {
         const {
             page = 1,
-            limit = 10,
+            limit = 200,
             search = '',
             sortBy = 'date',
             sortOrder = 'desc',
@@ -15,14 +15,14 @@ const getTransactions = async (req, res) => {
             maxPrice,
             gender,
             startDate,
-            endDate
+            endDate,
+            tags,
+            status
         } = req.query;
 
         const from = (page - 1) * limit;
         const to = from + limit - 1;
 
-        // Select with joins. !inner is used to enforce filtering on related tables if needed.
-        // We select *, customers(*), products(*) to get related data.
         let query = supabase
             .from('transactions')
             .select(`
@@ -31,23 +31,33 @@ const getTransactions = async (req, res) => {
                 products!inner (*)
             `, { count: 'exact' });
 
-        // Search (Full-text search emulation via related tables)
         if (search) {
-            // Searching on Customer Name or Phone (in customers table)
-            // 'OR' across tables is tricky without custom RPC, so we prioritize Customer Name / Phone
             query = query.or(`customer_name.ilike.%${search}%,phone_number.ilike.%${search}%`, { foreignTable: 'customers' });
         }
 
-        // Sorting
-        // For simple fields on transaction table:
-        if (['date', 'final_amount', 'quantity'].includes(sortBy)) {
-            query = query.order(sortBy, { ascending: sortOrder === 'asc' });
-        } else if (sortBy === 'customer_name') {
-            // Sorthing by foreign table field
-            query = query.order('customer_name', { foreignTable: 'customers', ascending: sortOrder === 'asc' });
+        if (region) query = query.in('customers.customer_region', region.split(','));
+        if (category) query = query.in('products.product_category', category.split(','));
+        if (payment_method) query = query.in('payment_method', payment_method.split(','));
+        if (gender) query = query.in('customers.gender', gender.split(','));
+
+        if (tags) query = query.in('customers.customer_type', tags.split(','));
+        if (status) query = query.in('order_status', status.split(','));
+
+        if (minPrice) query = query.gte('final_amount', minPrice);
+        if (maxPrice) query = query.lte('final_amount', maxPrice);
+
+        if (startDate) query = query.gte('date', startDate);
+        if (endDate) query = query.lte('date', endDate);
+
+        const safeSortOrder = (sortOrder || 'desc').trim().toLowerCase();
+        const safeSortBy = (sortBy || 'date').trim();
+
+        if (['date', 'final_amount', 'quantity'].includes(safeSortBy)) {
+            query = query.order(safeSortBy, { ascending: safeSortOrder === 'asc' });
+        } else if (safeSortBy === 'customer_name') {
+            query = query.order('customers(customer_name)', { ascending: safeSortOrder === 'asc' });
         }
 
-        // Pagination
         query = query.range(from, to);
 
         const { data, error, count } = await query;
@@ -56,7 +66,6 @@ const getTransactions = async (req, res) => {
             throw error;
         }
 
-        // Flatten the response for the frontend
         const flatData = data.map(item => ({
             ...item,
             customer_name: item.customers?.customer_name,
@@ -66,11 +75,11 @@ const getTransactions = async (req, res) => {
             gender: item.customers?.gender,
 
             product_name: item.products?.product_name,
+            product_id: item.products?.product_id,
             category: item.products?.product_category,
             brand: item.products?.brand,
-            employee: item.employee_name, // Ensure this field is mapped to 'employee' key
+            employee: item.employee_name,
 
-            // Explicitly remove the nested objects to keep the response clean
             customers: undefined,
             products: undefined
         }));
@@ -87,6 +96,19 @@ const getTransactions = async (req, res) => {
 
     } catch (err) {
         console.error('Error fetching transactions:', err);
+
+        // Check for timeout-related errors
+        const isTimeout = err.message?.toLowerCase().includes('timeout') ||
+            err.code === '57014' || // query_canceled
+            err.code === 'ETIMEDOUT';
+
+        if (isTimeout) {
+            return res.status(504).json({
+                error: 'Gateway Timeout',
+                details: 'The database query took too long to execute.'
+            });
+        }
+
         res.status(500).json({ error: 'Server error', details: err.message });
     }
 };

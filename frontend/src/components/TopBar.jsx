@@ -21,7 +21,7 @@ export const TopBar = ({ onSearch, searchValue }) => {
                 </div>
 
                 <div className="bg-amber-400 text-gray-900 font-semibold px-4 py-2 rounded-lg text-sm cursor-pointer shadow-sm hover:bg-amber-500 transition-colors">
-                    Saloni
+                    VARUN SARALA
                 </div>
             </div>
         </div>

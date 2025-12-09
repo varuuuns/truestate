@@ -6,13 +6,13 @@ const COLUMNS = [
     { key: 'transaction_id', label: 'Transaction ID' },
     { key: 'date', label: 'Date', sortable: true },
     { key: 'customer_id', label: 'Customer ID' },
+    { key: 'product_id', label: 'Product ID' },
     { key: 'customer_name', label: 'Customer name', sortable: true },
     { key: 'phone', label: 'Phone Number' },
     { key: 'gender', label: 'Gender' },
     { key: 'age', label: 'Age' },
     { key: 'category', label: 'Product Category' },
     { key: 'quantity', label: 'Quantity' },
-    // Extra columns from full view if needed, keeping it responsive
     { key: 'amount', label: 'Total Amount' },
     { key: 'region', label: 'Customer region' },
     { key: 'employee', label: 'Employee name' },
@@ -90,6 +90,9 @@ export const TransactionTable = ({ data, loading, sort, order, onSort, onToggleO
                                     {row.customer_id || 'CUST12016'}
                                 </td>
                                 <td className="px-6 py-4 text-gray-900 font-medium">
+                                    {row.product_id || 'PROD-001'}
+                                </td>
+                                <td className="px-6 py-4 text-gray-900 font-medium">
                                     {row.customer_name || 'Neha Yadav'}
                                 </td>
                                 <td className="px-6 py-4 text-gray-500">
@@ -121,10 +124,6 @@ export const TransactionTable = ({ data, loading, sort, order, onSort, onToggleO
                                 </td>
                             </motion.tr>
                         ))}
-                        {/* If data is empty, showing some dummy rows for visualization if user permits? 
-                            The user said 'replace style', so if data is empty it will look bad. 
-                            I'll trust real data or the fallbacks I added in `||`.
-                        */}
                     </tbody>
                 </table>
             </div>
