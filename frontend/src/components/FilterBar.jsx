@@ -51,13 +51,17 @@ const FilterButton = ({ id, label, activeValues = [], onToggle, isOpen, setIsOpe
                 <div
                     className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1"
                     onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                 >
                     {FILTER_OPTIONS[id].options.map((option) => {
                         const isSelected = activeValues.includes(option);
                         return (
                             <div
                                 key={option}
-                                onClick={() => onToggle(option)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onToggle(option);
+                                }}
                                 className="flex items-center px-4 py-2 hover:bg-amber-50 cursor-pointer transition-colors group"
                             >
                                 <div className={`
