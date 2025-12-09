@@ -10,7 +10,7 @@ import { useDebounce } from './hooks/useDebounce';
 
 function App() {
   const [data, setData] = useState([]);
-  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 100, totalPages: 1 });
   const [loading, setLoading] = useState(false);
 
   // State for filters/sort
@@ -41,13 +41,18 @@ function App() {
     try {
       const params = {
         page,
-        limit: 10,
+        limit: 100,
         search: debouncedSearch,
         sortBy: filters.sort,
         sortOrder: filters.order,
         region: filters.region.join(','),
         category: filters.category.join(','),
         gender: filters.gender.join(','),
+        tags: filters.tags.join(','),
+        payment_method: filters.payment.join(','),
+        status: filters.status.join(','),
+        startDate: filters.startDate,
+        endDate: filters.endDate,
       };
 
       const response = await fetchTransactions(params);

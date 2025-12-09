@@ -38,18 +38,6 @@ const getTransactions = async (req, res) => {
             query = query.or(`customer_name.ilike.%${search}%,phone_number.ilike.%${search}%`, { foreignTable: 'customers' });
         }
 
-        // Filters - targets nested table columns
-        if (region) query = query.in('customers.customer_region', region.split(','));
-        if (category) query = query.in('products.product_category', category.split(','));
-        if (payment_method) query = query.in('payment_method', payment_method.split(','));
-        if (gender) query = query.in('customers.gender', gender.split(','));
-
-        if (minPrice) query = query.gte('final_amount', minPrice);
-        if (maxPrice) query = query.lte('final_amount', maxPrice);
-
-        if (startDate) query = query.gte('date', startDate);
-        if (endDate) query = query.lte('date', endDate);
-
         // Sorting
         // For simple fields on transaction table:
         if (['date', 'final_amount', 'quantity'].includes(sortBy)) {
