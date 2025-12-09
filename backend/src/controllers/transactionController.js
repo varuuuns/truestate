@@ -80,6 +80,7 @@ const getTransactions = async (req, res) => {
             product_name: item.products?.product_name,
             category: item.products?.product_category,
             brand: item.products?.brand,
+            employee: item.employee_name, // Ensure this field is mapped to 'employee' key
 
             // Explicitly remove the nested objects to keep the response clean
             customers: undefined,

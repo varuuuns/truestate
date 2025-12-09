@@ -117,7 +117,7 @@ export const TransactionTable = ({ data, loading, sort, order, onSort, onToggleO
                                     {row.region || 'South'}
                                 </td>
                                 <td className="px-6 py-4 text-gray-900 font-medium">
-                                    {row.employee || 'Harsh Agrawal'}
+                                    {row.employee || '-'}
                                 </td>
                             </motion.tr>
                         ))}
