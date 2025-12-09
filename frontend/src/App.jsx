@@ -59,6 +59,7 @@ function App() {
   };
 
   const handleFilterChange = (key, value) => {
+    console.log('Filter changed:', key, value);
     setFilters(prev => ({ ...prev, [key]: value }));
     setPage(1);
   };
