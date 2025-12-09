@@ -22,6 +22,9 @@ function App() {
     age: [],
     tags: [],
     payment: [],
+    status: [],
+    startDate: '',
+    endDate: '',
     sort: 'date',
     order: 'desc'
   });
