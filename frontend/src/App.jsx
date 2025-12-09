@@ -19,6 +19,9 @@ function App() {
     region: [],
     category: [],
     gender: [],
+    age: [],
+    tags: [],
+    payment: [],
     sort: 'date',
     order: 'desc'
   });

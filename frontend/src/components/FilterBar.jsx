@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, RefreshCw, X } from 'lucide-react';
+import { ChevronDown, RefreshCw, Check } from 'lucide-react';
 
 const FILTER_OPTIONS = {
     region: { label: 'Customer Region', options: ['South', 'North', 'East', 'West'] },
     gender: { label: 'Gender', options: ['Male', 'Female'] },
-    age: { label: 'Age Range', options: ['18-25', '26-35', '36-50', '50+'] }, // Mock ranges
+    age: { label: 'Age Range', options: ['18-25', '26-35', '36-50', '50+'] },
     category: { label: 'Product Category', options: ['Clothing', 'Electronics', 'Furniture', 'Beauty', 'Sports'] },
-    tags: { label: 'Tags', options: ['VIP', 'New', 'Recurring'] }, // Mock
-    payment: { label: 'Payment Method', options: ['Credit Card', 'Debit Card', 'UPI', 'Cash'] } // Mock
+    tags: { label: 'Tags', options: ['VIP', 'New', 'Recurring'] },
+    payment: { label: 'Payment Method', options: ['Credit Card', 'Debit Card', 'UPI', 'Cash'] }
 };
 
 const FilterButton = ({ id, label, activeValues = [], onToggle, isOpen, setIsOpen }) => {
@@ -19,6 +19,7 @@ const FilterButton = ({ id, label, activeValues = [], onToggle, isOpen, setIsOpe
                 setIsOpen(null);
             }
         };
+        // Use mousedown to catch it before click helpers sometimes
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [setIsOpen]);
@@ -26,7 +27,10 @@ const FilterButton = ({ id, label, activeValues = [], onToggle, isOpen, setIsOpe
     return (
         <div className="relative" ref={dropdownRef}>
             <button
-                onClick={() => setIsOpen(isOpen ? null : id)}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setIsOpen(isOpen ? null : id);
+                }}
                 className={`
                     flex items-center gap-2 px-3 py-1.5 border rounded-md text-sm transition-colors
                     ${activeValues.length > 0
@@ -44,18 +48,32 @@ const FilterButton = ({ id, label, activeValues = [], onToggle, isOpen, setIsOpe
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
-                    {FILTER_OPTIONS[id].options.map((option) => (
-                        <label key={option} className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={activeValues.includes(option)}
-                                onChange={() => onToggle(option)}
-                                className="w-4 h-4 text-amber-500 border-gray-300 rounded focus:ring-amber-500"
-                            />
-                            <span className="ml-2 text-sm text-gray-700">{option}</span>
-                        </label>
-                    ))}
+                <div
+                    className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {FILTER_OPTIONS[id].options.map((option) => {
+                        const isSelected = activeValues.includes(option);
+                        return (
+                            <div
+                                key={option}
+                                onClick={() => onToggle(option)}
+                                className="flex items-center px-4 py-2 hover:bg-amber-50 cursor-pointer transition-colors group"
+                            >
+                                <div className={`
+                                    w-4 h-4 rounded border flex items-center justify-center mr-3 transition-colors
+                                    ${isSelected
+                                        ? 'bg-amber-500 border-amber-500'
+                                        : 'border-gray-300 group-hover:border-amber-400'}
+                                `}>
+                                    {isSelected && <Check size={10} className="text-white" />}
+                                </div>
+                                <span className={`text-sm ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
+                                    {option}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
@@ -74,13 +92,11 @@ export const FilterBar = ({ filters, onFilterChange }) => {
     };
 
     const handleReset = () => {
-        // Reset all array-based filters
         ['region', 'gender', 'age', 'category', 'tags', 'payment'].forEach(key => {
             onFilterChange && onFilterChange(key, []);
         });
     };
 
-    // Safety check for filters prop
     if (!filters) return null;
 
     return (
@@ -94,54 +110,17 @@ export const FilterBar = ({ filters, onFilterChange }) => {
                     <RefreshCw size={18} />
                 </button>
 
-                <FilterButton
-                    id="region"
-                    label="Customer Region"
-                    activeValues={filters.region}
-                    onToggle={(val) => handleToggle('region', val)}
-                    isOpen={openDropdown === 'region'}
-                    setIsOpen={setOpenDropdown}
-                />
-                <FilterButton
-                    id="gender"
-                    label="Gender"
-                    activeValues={filters.gender}
-                    onToggle={(val) => handleToggle('gender', val)}
-                    isOpen={openDropdown === 'gender'}
-                    setIsOpen={setOpenDropdown}
-                />
-                <FilterButton
-                    id="age"
-                    label="Age Range"
-                    activeValues={filters.age}
-                    onToggle={(val) => handleToggle('age', val)}
-                    isOpen={openDropdown === 'age'}
-                    setIsOpen={setOpenDropdown}
-                />
-                <FilterButton
-                    id="category"
-                    label="Product Category"
-                    activeValues={filters.category}
-                    onToggle={(val) => handleToggle('category', val)}
-                    isOpen={openDropdown === 'category'}
-                    setIsOpen={setOpenDropdown}
-                />
-                <FilterButton
-                    id="tags"
-                    label="Tags"
-                    activeValues={filters.tags}
-                    onToggle={(val) => handleToggle('tags', val)}
-                    isOpen={openDropdown === 'tags'}
-                    setIsOpen={setOpenDropdown}
-                />
-                <FilterButton
-                    id="payment"
-                    label="Payment Method"
-                    activeValues={filters.payment}
-                    onToggle={(val) => handleToggle('payment', val)}
-                    isOpen={openDropdown === 'payment'}
-                    setIsOpen={setOpenDropdown}
-                />
+                {Object.keys(FILTER_OPTIONS).map(key => (
+                    <FilterButton
+                        key={key}
+                        id={key}
+                        label={FILTER_OPTIONS[key].label}
+                        activeValues={filters[key]}
+                        onToggle={(val) => handleToggle(key, val)}
+                        isOpen={openDropdown === key}
+                        setIsOpen={setOpenDropdown}
+                    />
+                ))}
             </div>
 
             <div className="flex items-center gap-2">
