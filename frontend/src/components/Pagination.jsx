@@ -1,31 +1,33 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
 export const Pagination = ({ meta, onPageChange }) => {
-    const { page, totalPages, total } = meta;
+    const { page, totalPages } = meta;
+
+    // A simple range generator for pagination items
+    // For now, simple implementation logic. 
+    // Ideally should handle 1 ... 4 5 6 ... 10 logic but simple start is sufficient
+    // or just hardcode visually for now? No, functional.
+
+    const pages = [];
+    for (let i = 1; i <= Math.min(totalPages, 6); i++) {
+        pages.push(i);
+    }
+    // Just showing first 6 pages max for simplicity as per screenshot roughly
 
     return (
-        <div className="flex items-center justify-between p-4 glass-panel">
-            <div className="text-sm text-slate-400">
-                Showing page <span className="font-medium text-white">{page}</span> of{' '}
-                <span className="font-medium text-white">{totalPages}</span> ({total} items)
-            </div>
-            <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+            {pages.map((p) => (
                 <button
-                    onClick={() => onPageChange(page - 1)}
-                    disabled={page === 1}
-                    className="p-2 rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-slate-300 hover:text-white"
+                    key={p}
+                    onClick={() => onPageChange(p)}
+                    className={`
+                        w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors
+                        ${page === p
+                            ? 'bg-gray-900 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
+                    `}
                 >
-                    <ChevronLeft size={20} />
+                    {p}
                 </button>
-                <button
-                    onClick={() => onPageChange(page + 1)}
-                    disabled={page === totalPages}
-                    className="p-2 rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-slate-300 hover:text-white"
-                >
-                    <ChevronRight size={20} />
-                </button>
-            </div>
+            ))}
         </div>
     );
 };
