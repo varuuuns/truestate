@@ -84,7 +84,7 @@ export const TransactionTable = ({ data, loading, sort, order, onSort, onToggleO
                                     {row.transaction_id || '1234567'}
                                 </td>
                                 <td className="px-6 py-4 text-gray-500">
-                                    {row.date ? new Date(row.date).toISOString().split('T')[0] : '2023-09-26'}
+                                    {row.date ? new Date(row.date).toLocaleDateString() : '-'}
                                 </td>
                                 <td className="px-6 py-4 text-gray-900 font-medium">
                                     {row.customer_id || 'CUST12016'}
