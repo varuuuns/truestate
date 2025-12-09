@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Layout } from './components/Layout';
-import { SearchBar } from './components/SearchBar';
-import { FilterPanel } from './components/FilterPanel';
+import { Sidebar } from './components/Sidebar';
+import { TopBar } from './components/TopBar';
+import { FilterBar } from './components/FilterBar';
+import { StatsCards } from './components/StatsCards';
 import { TransactionTable } from './components/TransactionTable';
 import { Pagination } from './components/Pagination';
 import { fetchTransactions } from './api/api';
-import { useDebounce } from './hooks/useDebounce'; // utility hook I'll create
+import { useDebounce } from './hooks/useDebounce';
 
 function App() {
   const [data, setData] = useState([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   // State for filters/sort
   const [search, setSearch] = useState('');
@@ -48,7 +48,8 @@ function App() {
       setData(response.data);
       setMeta(response.meta);
     } catch (err) {
-      setError('Failed to load data. Please check backend connection.');
+      console.error('Failed to load data', err);
+      // Fallback or empty state handled by table
     } finally {
       setLoading(false);
     }
@@ -56,25 +57,24 @@ function App() {
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPage(1); // Reset to page 1 on filter change
+    setPage(1);
   };
 
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-            Retail Dashboard
-          </h1>
-          <SearchBar value={search} onChange={setSearch} />
-        </div>
+    <div className="flex bg-white min-h-screen font-sans text-gray-900">
+      {/* Sidebar */}
+      <Sidebar />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <FilterPanel filters={filters} onChange={handleFilterChange} />
-          </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <TopBar onSearch={setSearch} searchValue={search} />
 
-          <div className="lg:col-span-3 space-y-4">
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8">
+          <div className="max-w-7xl mx-auto">
+            <FilterBar /> {/* Currently static visual, can be wired up later */}
+
+            <StatsCards />
+
             <TransactionTable
               data={data}
               loading={loading}
@@ -83,14 +83,17 @@ function App() {
               onSort={(field) => handleFilterChange('sort', field)}
               onToggleOrder={() => handleFilterChange('order', filters.order === 'asc' ? 'desc' : 'asc')}
             />
-            <Pagination
-              meta={meta}
-              onPageChange={setPage}
-            />
+
+            <div className="mt-6 flex justify-center">
+              <Pagination
+                meta={meta}
+                onPageChange={setPage}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }
 
